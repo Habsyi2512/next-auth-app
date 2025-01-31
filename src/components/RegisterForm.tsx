@@ -6,9 +6,6 @@ import { ChangeEvent, FormEvent, useState } from "react";
 export default function RegisterForm() {
   const [formValues, setFormValues] = useState({});
 
-  const data = 1;
-  console.log(data);
-
   function handleInput(e: ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setFormValues((old) => ({ ...old, [name]: value }));
