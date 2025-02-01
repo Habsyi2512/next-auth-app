@@ -1,19 +1,18 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { useForm, FieldValues } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerFormSchema } from "@/lib/schemas/registerSchema";
 
 export default function RegisterForm() {
-  const [formValues, setFormValues] = useState({});
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FieldValues>({ resolver: zodResolver(registerFormSchema) });
 
-  function handleInput(e: ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target;
-    setFormValues((old) => ({ ...old, [name]: value }));
-  }
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
+  async function onSubmit(formValues: FieldValues) {
     try {
       const res = await fetch("http://localhost:3000/api/register", {
         method: "POST",
@@ -25,7 +24,6 @@ export default function RegisterForm() {
 
       if (!res.ok) return alert("register failed");
 
-      setFormValues({});
       return signIn(undefined, { callbackUrl: "/" });
     } catch (error) {
       console.log(error);
@@ -35,51 +33,62 @@ export default function RegisterForm() {
   return (
     <div className="shadow-md rounded-md p-6 w-[40vw] bg-white">
       <h3 className="text-xl text-center">Register</h3>
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
         <div className="flex flex-col gap-2">
           <label htmlFor="name">Name</label>
           <input
             className="border-b border-b-black py-1 px-2"
             type="text"
-            name="name"
+            {...register("name")}
             id="name"
             placeholder="John"
-            onChange={handleInput}
           />
+          {errors.name?.message && (
+            <p className="text-red-500 text-sm">{`${errors.name?.message}`}</p>
+          )}
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="email">Email</label>
           <input
             type="email"
             className="border-b border-b-black py-1 px-2"
-            name="email"
+            {...register("email")}
             id="email"
             placeholder="example@gmail.com"
-            onChange={handleInput}
           />
+          {errors.email?.message && (
+            <p className="text-red-500 text-sm">{`${errors.email?.message}`}</p>
+          )}
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="password">Password</label>
           <input
             type="password"
             className="border-b border-b-black py-1 px-2"
-            name="password"
+            {...register("password")}
             id="password"
-            onChange={handleInput}
           />
+          {errors.password?.message && (
+            <p className="text-red-500 text-sm">{`${errors.password?.message}`}</p>
+          )}
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="confirm">Confirm</label>
           <input
             type="password"
             className="border-b border-b-black py-1 px-2"
-            name="confirm"
+            {...register("confirm")}
             id="confirm"
-            onChange={handleInput}
           />
+          {errors.confirm?.message && (
+            <p className="text-red-500 text-sm">{`${errors.confirm?.message}`}</p>
+          )}
         </div>
         <div className="text-center">
-          <button className="px-6 py-2 bg-sky-600 text-slate-100 rounded-md">
+          <button
+            type="submit"
+            className="px-6 py-2 bg-sky-600 text-slate-100 rounded-md"
+          >
             Register
           </button>
         </div>
