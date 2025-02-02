@@ -1,26 +1,35 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
+import { registerFormSchema } from "@/lib/schemas/registerSchema";
+import { z } from "zod";
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const formValues = await req.json();
+    const validateFormValues = registerFormSchema.parse(formValues);
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(validateFormValues.password, 12);
 
-    const user = await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
-        name: name,
-        email: email,
+        name: validateFormValues.name,
+        email: validateFormValues.email,
         password: hashedPassword,
       },
     });
 
-    return NextResponse.json(user, { status: 201 });
+    return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { status: "error Zod", message: error.issues },
+        { status: 400 }
+      );
+    }
     if (error instanceof Error) {
       return NextResponse.json(
-        { status: "error", message: error.message },
+        { status: "error response", message: error.message },
         { status: 500 }
       );
     }
