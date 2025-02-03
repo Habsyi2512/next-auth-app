@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
+import GoogleProvider from "next-auth/providers/google";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -14,12 +15,9 @@ export const authOptions: NextAuthOptions = {
     Credentials({
       credentials: {
         email: {
-          label: "Email",
           type: "email",
-          placeholder: "Example@example.com",
         },
         password: {
-          label: "Password",
           type: "password",
         },
       },
@@ -46,6 +44,10 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
         };
       },
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "", 
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
   callbacks: {
